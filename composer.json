@@ -1,0 +1,25 @@
+{
+    "name": "petert82/monolog-logfmt",
+    "require": {
+        "monolog/monolog": "~1.23"
+    },
+    "description": "A logfmt formatter for Monolog",
+    "keywords": [
+        "log",
+        "logging",
+        "logfmt",
+        "monolog"
+    ],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Peter Thompson",
+            "email": "peter.thompson@dunelm.org.uk"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Petert82\\": "src/"
+        }
+    }
+}
