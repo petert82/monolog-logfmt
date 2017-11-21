@@ -49,22 +49,18 @@ Hi
         $expected = 'ts=2017-11-19T19:00:00+00:00 lvl=INFO chan=app msg=1'."\n";
         $this->assertEquals($expected, $formatter->format($record));
 
-        $formatter = new LogfmtFormatter();
         $record = $this->getRecord(1.1);
         $expected = 'ts=2017-11-19T19:00:00+00:00 lvl=INFO chan=app msg=1.1'."\n";
         $this->assertEquals($expected, $formatter->format($record));
 
-        $formatter = new LogfmtFormatter();
         $record = $this->getRecord(true);
         $expected = 'ts=2017-11-19T19:00:00+00:00 lvl=INFO chan=app msg=true'."\n";
         $this->assertEquals($expected, $formatter->format($record));
 
-        $formatter = new LogfmtFormatter();
         $record = $this->getRecord(false);
         $expected = 'ts=2017-11-19T19:00:00+00:00 lvl=INFO chan=app msg=false'."\n";
         $this->assertEquals($expected, $formatter->format($record));
 
-        $formatter = new LogfmtFormatter();
         $record = $this->getRecord(null);
         $expected = 'ts=2017-11-19T19:00:00+00:00 lvl=INFO chan=app msg=NULL'."\n";
         $this->assertEquals($expected, $formatter->format($record));
@@ -73,7 +69,6 @@ Hi
     public function testItIncludesContext()
     {
         $formatter = new LogfmtFormatter();
-
         $record = $this->getRecord('Message');
         $record['context']['foo'] = 'bar';
         $expected = 'ts=2017-11-19T19:00:00+00:00 lvl=INFO chan=app msg=Message foo=bar'."\n";
@@ -88,7 +83,6 @@ Hi
     public function testItIncludesExtra()
     {
         $formatter = new LogfmtFormatter();
-
         $record = $this->getRecord('Message');
         $record['extra']['foo'] = 'bar';
         $expected = 'ts=2017-11-19T19:00:00+00:00 lvl=INFO chan=app msg=Message foo=bar'."\n";
@@ -103,7 +97,6 @@ Hi
     public function testContextOverridesExtra()
     {
         $formatter = new LogfmtFormatter();
-
         $record = $this->getRecord('Message');
         $record['context']['foo'] = 'context val';
         $record['extra']['foo'] = 'extra val';
@@ -168,6 +161,69 @@ what?" => false,
         ];
         $expected = 'ts=2017-11-19T19:00:00+00:00 lvl=INFO chan=app msg=Message outer={"inner":{"one":1,"0":"two"}}'."\n";
         $this->assertEquals($expected, $formatter->format($record));
+    }
+
+    public function testKeysCanBeCustomised()
+    {
+        $formatter = new LogfmtFormatter('date', 'level', 'channel', 'message');
+        $record = $this->getRecord('Message');
+        $expected = 'date=2017-11-19T19:00:00+00:00 level=INFO channel=app message=Message'."\n";
+        $this->assertEquals($expected, $formatter->format($record));
+    }
+
+    public function testKeysCanBeExcluded()
+    {
+        $formatter = new LogfmtFormatter('', null, null, 'msg');
+        $record = $this->getRecord('Message');
+        $expected = 'msg=Message'."\n";
+        $this->assertEquals($expected, $formatter->format($record));
+
+        $formatter = new LogfmtFormatter(null, 'lvl', 'chan', '');
+        $record = $this->getRecord('Message');
+        $expected = 'lvl=INFO chan=app'."\n";
+        $this->assertEquals($expected, $formatter->format($record));
+
+        // Invalid keys should also be excluded
+        $formatter = new LogfmtFormatter('time stamp', 'le"v"el', ' ', 'mess=age');
+        $record = $this->getRecord('Message');
+        $record['context']['foo'] = 'bar';
+        $expected = 'foo=bar'."\n";
+        $this->assertEquals($expected, $formatter->format($record));
+    }
+
+    public function testMainKeysCantBeOverwritten()
+    {
+        $formatter = new LogfmtFormatter();
+        $record = $this->getRecord('Message');
+        $record['context']['ts'] = 'This should not be output';
+        $record['context']['lvl'] = 'And neither should this';
+        $record['extra']['chan'] = 'Or this...';
+        $record['extra']['msg'] = '...or this';
+        $expected = 'ts=2017-11-19T19:00:00+00:00 lvl=INFO chan=app msg=Message'."\n";
+        $this->assertEquals($expected, $formatter->format($record));
+
+        $formatter = new LogfmtFormatter('date', 'level', 'channel', 'message');
+        $record = $this->getRecord('Message');
+        $record['context']['date'] = 'This should not be output';
+        $record['context']['level'] = 'And neither should this';
+        $record['extra']['channel'] = 'Or this...';
+        $record['extra']['message'] = '...or this';
+        $expected = 'date=2017-11-19T19:00:00+00:00 level=INFO channel=app message=Message'."\n";
+        $this->assertEquals($expected, $formatter->format($record));
+    }
+
+    public function testItFormatsBatches()
+    {
+        $formatter = new LogfmtFormatter();
+        $batch = [
+            $this->getRecord('Message 1'),
+            $this->getRecord('Message 2'),
+        ];
+        $expected = <<<EOS
+ts=2017-11-19T19:00:00+00:00 lvl=INFO chan=app msg="Message 1"
+ts=2017-11-19T19:00:00+00:00 lvl=INFO chan=app msg="Message 2"\n
+EOS;
+        $this->assertEquals($expected, $formatter->formatBatch($batch));
     }
 
     protected function getRecord($message = 'A log message')

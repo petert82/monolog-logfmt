@@ -13,49 +13,95 @@ use Monolog\Formatter\NormalizerFormatter;
  */
 class LogfmtFormatter extends NormalizerFormatter
 {
-    protected $lvlKey = 'lvl';
-    protected $chanKey = 'chan';
-    protected $msgKey = 'msg';
-    protected $timeKey = 'ts';
+    protected $timeKey;
+    protected $lvlKey;
+    protected $chanKey;
+    protected $msgKey;
+
+    protected $timeKeyValid = true;
+    protected $lvlKeyValid = true;
+    protected $chanKeyValid = true;
+    protected $msgKeyValid = true;
     
-    public function __construct()
-    {
+    /**
+     * Constructor params can be used to customise the keys that are used in the formatted output
+     * for the standard (non-context/extra) log record fields.
+     * 
+     * Set any of these params to an empty string or null to not include that field in the output.
+     * 
+     * Note that these standard log fields will take precedence over fields with the same name(s)
+     * in the context or extra arrays when formatting log records. i.e. with the default names, a
+     * context field with the name "msg" would not be included in the output from `format`.
+     * 
+     * @param string $dateTimeKey Key to use for the log timestamp.
+     * @param string $levelKey    Key to use for the log level.
+     * @param string $channelKey  Key to use for the log channel name.
+     * @param string $messageKey  Key to use for the log message.
+     */
+    public function __construct(
+        $dateTimeKey = 'ts',
+        $levelKey = 'lvl',
+        $channelKey = 'chan',
+        $messageKey = 'msg'
+    ) {
+        $this->timeKey = trim($dateTimeKey);
+        $this->lvlKey = trim($levelKey);
+        $this->chanKey = trim($channelKey);
+        $this->msgKey = trim($messageKey);
+        $this->timeKeyValid = $this->isValidIdent($this->timeKey);
+        $this->lvlKeyValid = $this->isValidIdent($this->lvlKey);
+        $this->chanKeyValid = $this->isValidIdent($this->chanKey);
+        $this->msgKeyValid = $this->isValidIdent($this->msgKey);
         $this->dateFormat = \DateTime::RFC3339;
     }
     
+    /**
+     * {@inheritdoc}
+     */
     public function format(array $record)
     {
         $vars = parent::format($record);
         
-        $pairs = [
-            $this->timeKey.'='.$vars['datetime'],
-            $this->lvlKey.'='.$vars['level_name'],
-            $this->chanKey.'='.$this->stringifyVal($vars['channel']),
-            $this->msgKey.'='.$this->stringifyVal($vars['message']),
-        ];
+        $pairs = [];
+        if ($this->timeKeyValid) {
+            $pairs[$this->timeKey] = $this->timeKey.'='.$vars['datetime'];
+        }
+        if ($this->lvlKeyValid) {
+            $pairs[$this->lvlKey] = $this->lvlKey.'='.$vars['level_name'];
+        }
+        if ($this->chanKeyValid) {
+            $pairs[$this->chanKey] = $this->chanKey.'='.$this->stringifyVal($vars['channel']);
+        }
+        if ($this->msgKeyValid) {
+            $pairs[$this->msgKey] = $this->msgKey.'='.$this->stringifyVal($vars['message']);
+        }
 
         foreach ($vars['context'] as $ctxKey => $ctxVal) {
+            if (array_key_exists($ctxKey, $pairs)) {
+                continue;
+            }
             if (! $this->isValidIdent($ctxKey)) {
                 continue;
             }
-            $pairs[] = $this->stringifyVal($ctxKey).'='.$this->stringifyVal($ctxVal);
+            $pairs[$ctxKey] = $ctxKey.'='.$this->stringifyVal($ctxVal);
         }
 
         foreach ($vars['extra'] as $extraKey => $extraVal) {
-            if (array_key_exists($extraKey, $vars['context'])) {
+            if (array_key_exists($extraKey, $pairs)) {
                 continue;
             }
             if (! $this->isValidIdent($extraKey)) {
                 continue;
             }
-            $pairs[] = $this->stringifyVal($extraKey).'='.$this->stringifyVal($extraVal);
+            $pairs[$extraKey] = $extraKey.'='.$this->stringifyVal($extraVal);
         }
         
-        $line = implode(' ', $pairs)."\n";
-        
-        return $line;
+        return implode(' ', $pairs)."\n";
     }
     
+    /**
+     * {@inheritdoc}
+     */
     public function formatBatch(array $records)
     {
         $message = '';
