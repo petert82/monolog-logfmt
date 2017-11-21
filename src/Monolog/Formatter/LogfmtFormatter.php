@@ -83,6 +83,10 @@ class LogfmtFormatter extends NormalizerFormatter
                 return false;
             }
 
+            if (0 === strlen($val)) {
+                return false;
+            }
+
             return true;
         }
 

@@ -31,6 +31,10 @@ class LogfmtFormatterTest extends TestCase
         $expected = 'ts=2017-11-19T19:00:00+00:00 lvl=INFO chan=app msg="\"speech_marks\""'."\n";
         $this->assertEquals($expected, $formatter->format($record));
 
+        $record = $this->getRecord('');
+        $expected = 'ts=2017-11-19T19:00:00+00:00 lvl=INFO chan=app msg=""'."\n";
+        $this->assertEquals($expected, $formatter->format($record));
+
         $record = $this->getRecord("
 Hi
 ");
@@ -119,7 +123,8 @@ Hi
             "this=wrong" => 1,
             '%^asdf' => true,
             "
-what?" => false
+what?" => false,
+            '' => 'ignore this',
         ];
         $expected = 'ts=2017-11-19T19:00:00+00:00 lvl=INFO chan=app msg=Message cool%story=bro %^asdf=true'."\n";
         $this->assertEquals($expected, $formatter->format($record));
