@@ -1,6 +1,7 @@
 {
     "name": "petert82/monolog-logfmt",
     "require": {
+        "php": ">=5.4.0",
         "monolog/monolog": "~1.23"
     },
     "description": "A logfmt formatter for Monolog",
