@@ -141,6 +141,21 @@ what?" => false,
         $this->assertEquals($expected, $formatter->format($record));
     }
 
+    public function testItAllowsDateTimeFormatToBeOverridden()
+    {
+        $formatter = new LogfmtFormatter(
+            'ts',
+            'lvl',
+            'chan',
+            'msg',
+            'YmdHis'
+        );
+
+        $record = $this->getRecord(new \DateTime('2017-11-19T20:00:00', new \DateTimeZone('Europe/Vienna')));
+        $expected = 'ts=20171119190000 lvl=INFO chan=app msg=20171119200000'."\n";
+        $this->assertEquals($expected, $formatter->format($record));
+    }
+
     public function testItFormatsNestedContextOrExtra()
     {
         $formatter = new LogfmtFormatter();
