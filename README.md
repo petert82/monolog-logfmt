@@ -47,20 +47,21 @@ Key  | Content
 `chan` | Channel name.
 `msg`  | Log message.
 
-All of these keys can be customised by passing the appropriate parameters to the formatter's constructor. For example:
+All of these keys, and the format used for formatting logged `DateTimes`, can be customised by passing the appropriate parameters to the formatter's constructor. For example:
 
 ```php
 $tsKey = 'date';
 $levelKey = 'level';
 $channelKey = 'channel';
 $msgKey = 'message';
-$formatter = new LogfmtFormatter($tsKey, $levelKey, $channelKey, $msgKey);
+$dateFormat = 'Ymd-His';
+$formatter = new LogfmtFormatter($tsKey, $levelKey, $channelKey, $msgKey, $dateFormat);
 ```
 
 Logs formatted using this formatter would look like this:
 
 ```
-date=2017-11-19T19:00:00+00:00 level=INFO channel=app message=Message
+date=20171119-190000 level=INFO channel=app message=Message
 ```
 
 The standard keys can also be excluded from the output by passing an empty string (or `null`) to the appropriate constructor param. For example, to include only the message:
