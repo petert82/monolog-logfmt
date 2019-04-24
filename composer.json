@@ -23,5 +23,8 @@
         "psr-4": {
             "Petert82\\": "src/"
         }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^7.5"
     }
 }
