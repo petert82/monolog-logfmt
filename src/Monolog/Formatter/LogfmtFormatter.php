@@ -42,7 +42,8 @@ class LogfmtFormatter extends NormalizerFormatter
         $dateTimeKey = 'ts',
         $levelKey = 'lvl',
         $channelKey = 'chan',
-        $messageKey = 'msg'
+        $messageKey = 'msg',
+        $dateFormat = \DateTime::RFC3339
     ) {
         $this->timeKey = trim($dateTimeKey);
         $this->lvlKey = trim($levelKey);
@@ -52,7 +53,7 @@ class LogfmtFormatter extends NormalizerFormatter
         $this->lvlKeyValid = $this->isValidIdent($this->lvlKey);
         $this->chanKeyValid = $this->isValidIdent($this->chanKey);
         $this->msgKeyValid = $this->isValidIdent($this->msgKey);
-        $this->dateFormat = \DateTime::RFC3339;
+        $this->dateFormat = $dateFormat;
     }
     
     /**
