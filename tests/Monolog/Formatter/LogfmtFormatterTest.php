@@ -1,10 +1,12 @@
 <?php
+declare(strict_types=1);
+
 use PHPUnit\Framework\TestCase;
 use Petert82\Monolog\Formatter\LogfmtFormatter;
 
 class LogfmtFormatterTest extends TestCase
 {
-    public function testItDoesntQuotePlainMessages()
+    public function testItDoesntQuotePlainMessages(): void
     {
         $formatter = new LogfmtFormatter();
         $record = $this->getRecord('Hi');
@@ -15,8 +17,8 @@ class LogfmtFormatterTest extends TestCase
         $expected = 'ts=2017-11-19T19:00:00+00:00 lvl=INFO chan=app msg=åéü'."\n";
         $this->assertEquals($expected, $formatter->format($record));
     }
-    
-    public function testItQuotesMessages()
+
+    public function testItQuotesMessages(): void
     {
         $formatter = new LogfmtFormatter();
         $record = $this->getRecord('Hi there');
@@ -42,7 +44,7 @@ Hi
         $this->assertEquals($expected, $formatter->format($record));
     }
 
-    public function testItFormatsScalarMessages()
+    public function testItFormatsScalarMessages(): void
     {
         $formatter = new LogfmtFormatter();
         $record = $this->getRecord(1);
@@ -66,7 +68,7 @@ Hi
         $this->assertEquals($expected, $formatter->format($record));
     }
 
-    public function testItIncludesContext()
+    public function testItIncludesContext(): void
     {
         $formatter = new LogfmtFormatter();
         $record = $this->getRecord('Message');
@@ -80,7 +82,7 @@ Hi
         $this->assertEquals($expected, $formatter->format($record));
     }
 
-    public function testItIncludesExtra()
+    public function testItIncludesExtra(): void
     {
         $formatter = new LogfmtFormatter();
         $record = $this->getRecord('Message');
@@ -94,7 +96,7 @@ Hi
         $this->assertEquals($expected, $formatter->format($record));
     }
 
-    public function testContextOverridesExtra()
+    public function testContextOverridesExtra(): void
     {
         $formatter = new LogfmtFormatter();
         $record = $this->getRecord('Message');
@@ -104,7 +106,7 @@ Hi
         $this->assertEquals($expected, $formatter->format($record));
     }
 
-    public function testItIgnoresInvalidKeys()
+    public function testItIgnoresInvalidKeys(): void
     {
         $formatter = new LogfmtFormatter();
         $record = $this->getRecord('Message');
@@ -123,25 +125,25 @@ what?" => false,
         $this->assertEquals($expected, $formatter->format($record));
     }
 
-    public function testItFormatsDateTimes()
+    public function testItFormatsDateTimes(): void
     {
         $formatter = new LogfmtFormatter();
-        $record = $this->getRecord(new \DateTime('2017-11-19T20:00:00', new \DateTimeZone('Europe/Vienna')));
+        $record = $this->getRecord(new DateTime('2017-11-19T20:00:00', new DateTimeZone('Europe/Vienna')));
         $expected = 'ts=2017-11-19T19:00:00+00:00 lvl=INFO chan=app msg=2017-11-19T20:00:00+01:00'."\n";
         $this->assertEquals($expected, $formatter->format($record));
 
         $record = $this->getRecord('Message');
-        $record['context']['a_date'] = new \DateTime('2017-11-19T20:00:00', new \DateTimeZone('Europe/Vienna'));
+        $record['context']['a_date'] = new DateTime('2017-11-19T20:00:00', new DateTimeZone('Europe/Vienna'));
         $expected = 'ts=2017-11-19T19:00:00+00:00 lvl=INFO chan=app msg=Message a_date=2017-11-19T20:00:00+01:00'."\n";
         $this->assertEquals($expected, $formatter->format($record));
 
         $record = $this->getRecord('Message');
-        $record['extra']['a_date'] = new \DateTime('2017-11-19T20:00:00', new \DateTimeZone('Europe/Vienna'));
+        $record['extra']['a_date'] = new DateTime('2017-11-19T20:00:00', new DateTimeZone('Europe/Vienna'));
         $expected = 'ts=2017-11-19T19:00:00+00:00 lvl=INFO chan=app msg=Message a_date=2017-11-19T20:00:00+01:00'."\n";
         $this->assertEquals($expected, $formatter->format($record));
     }
 
-    public function testItAllowsDateTimeFormatToBeOverridden()
+    public function testItAllowsDateTimeFormatToBeOverridden(): void
     {
         $formatter = new LogfmtFormatter(
             'ts',
@@ -151,12 +153,12 @@ what?" => false,
             'YmdHis'
         );
 
-        $record = $this->getRecord(new \DateTime('2017-11-19T20:00:00', new \DateTimeZone('Europe/Vienna')));
+        $record = $this->getRecord(new DateTime('2017-11-19T20:00:00', new DateTimeZone('Europe/Vienna')));
         $expected = 'ts=20171119190000 lvl=INFO chan=app msg=20171119200000'."\n";
         $this->assertEquals($expected, $formatter->format($record));
     }
 
-    public function testItFormatsNestedContextOrExtra()
+    public function testItFormatsNestedContextOrExtra(): void
     {
         $formatter = new LogfmtFormatter();
         $record = $this->getRecord('Message');
@@ -178,7 +180,7 @@ what?" => false,
         $this->assertEquals($expected, $formatter->format($record));
     }
 
-    public function testKeysCanBeCustomised()
+    public function testKeysCanBeCustomised(): void
     {
         $formatter = new LogfmtFormatter('date', 'level', 'channel', 'message');
         $record = $this->getRecord('Message');
@@ -186,7 +188,7 @@ what?" => false,
         $this->assertEquals($expected, $formatter->format($record));
     }
 
-    public function testKeysCanBeExcluded()
+    public function testKeysCanBeExcluded(): void
     {
         $formatter = new LogfmtFormatter('', null, null, 'msg');
         $record = $this->getRecord('Message');
@@ -206,7 +208,7 @@ what?" => false,
         $this->assertEquals($expected, $formatter->format($record));
     }
 
-    public function testMainKeysCantBeOverwritten()
+    public function testMainKeysCantBeOverwritten(): void
     {
         $formatter = new LogfmtFormatter();
         $record = $this->getRecord('Message');
@@ -227,7 +229,7 @@ what?" => false,
         $this->assertEquals($expected, $formatter->format($record));
     }
 
-    public function testItFormatsBatches()
+    public function testItFormatsBatches(): void
     {
         $formatter = new LogfmtFormatter();
         $batch = [
@@ -241,7 +243,7 @@ EOS;
         $this->assertEquals($expected, $formatter->formatBatch($batch));
     }
 
-    protected function getRecord($message = 'A log message')
+    protected function getRecord($message = 'A log message'): array
     {
         return [
             'message' => $message,
@@ -249,7 +251,7 @@ EOS;
             'level_name' => 'INFO',
             'context' => [],
             'channel' => 'app',
-            'datetime' => new \DateTime('2017-11-19T19:00:00', new \DateTimeZone('UTC')),
+            'datetime' => new DateTime('2017-11-19T19:00:00', new DateTimeZone('UTC')),
             'extra' => [],
         ];
     }

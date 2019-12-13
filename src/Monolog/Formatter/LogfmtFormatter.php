@@ -1,11 +1,16 @@
 <?php
+declare(strict_types=1);
+
 namespace Petert82\Monolog\Formatter;
 
 use Monolog\Formatter\NormalizerFormatter;
+use function is_bool;
+use function is_scalar;
+use function var_export;
 
 /**
  * Formats records into a logfmt string.
- * 
+ *
  * @see https://brandur.org/logfmt
  * @see https://godoc.org/github.com/kr/logfmt
  *
@@ -13,15 +18,15 @@ use Monolog\Formatter\NormalizerFormatter;
  */
 class LogfmtFormatter extends NormalizerFormatter
 {
-    protected $timeKey;
-    protected $lvlKey;
-    protected $chanKey;
-    protected $msgKey;
+    protected ?string $timeKey;
+    protected ?string $lvlKey;
+    protected ?string $chanKey;
+    protected ?string $msgKey;
 
-    protected $timeKeyValid = true;
-    protected $lvlKeyValid = true;
-    protected $chanKeyValid = true;
-    protected $msgKeyValid = true;
+    protected bool $timeKeyValid = true;
+    protected bool $lvlKeyValid = true;
+    protected bool $chanKeyValid = true;
+    protected bool $msgKeyValid = true;
 
     /**
      * Constructor params can be used to customise the keys that are used in the formatted output
@@ -32,38 +37,33 @@ class LogfmtFormatter extends NormalizerFormatter
      * Note that these standard log fields will take precedence over fields with the same name(s)
      * in the context or extra arrays when formatting log records. i.e. with the default names, a
      * context field with the name "msg" would not be included in the output from `format`.
-     *
-     * @param string $dateTimeKey Key to use for the log timestamp.
-     * @param string $levelKey Key to use for the log level.
-     * @param string $channelKey Key to use for the log channel name.
-     * @param string $messageKey Key to use for the log message.
-     * @param string $dateFormat The format of the timestamp: should be a format supported by DateTime::format
      */
     public function __construct(
-        $dateTimeKey = 'ts',
-        $levelKey = 'lvl',
-        $channelKey = 'chan',
-        $messageKey = 'msg',
-        $dateFormat = \DateTime::RFC3339
+        ?string $dateTimeKey = 'ts',
+        ?string $levelKey = 'lvl',
+        ?string $channelKey = 'chan',
+        ?string $messageKey = 'msg',
+        string $dateFormat = \DateTime::RFC3339
     ) {
-        $this->timeKey = trim($dateTimeKey);
-        $this->lvlKey = trim($levelKey);
-        $this->chanKey = trim($channelKey);
-        $this->msgKey = trim($messageKey);
+        $this->timeKey = $dateTimeKey ? trim($dateTimeKey) : null;
+        $this->lvlKey = $levelKey ? trim($levelKey) : null;
+        $this->chanKey = $channelKey ? trim($channelKey) : null;
+        $this->msgKey = $messageKey ? trim($messageKey) : null;
         $this->timeKeyValid = $this->isValidIdent($this->timeKey);
         $this->lvlKeyValid = $this->isValidIdent($this->lvlKey);
         $this->chanKeyValid = $this->isValidIdent($this->chanKey);
         $this->msgKeyValid = $this->isValidIdent($this->msgKey);
-        $this->dateFormat = $dateFormat;
+
+        parent::__construct($dateFormat);
     }
-    
+
     /**
      * {@inheritdoc}
      */
     public function format(array $record)
     {
         $vars = parent::format($record);
-        
+
         $pairs = [];
         if ($this->timeKeyValid) {
             $pairs[$this->timeKey] = $this->timeKey.'='.$vars['datetime'];
@@ -97,10 +97,10 @@ class LogfmtFormatter extends NormalizerFormatter
             }
             $pairs[$extraKey] = $extraKey.'='.$this->stringifyVal($extraVal);
         }
-        
+
         return implode(' ', $pairs)."\n";
     }
-    
+
     /**
      * {@inheritdoc}
      */
@@ -114,7 +114,7 @@ class LogfmtFormatter extends NormalizerFormatter
         return $message;
     }
 
-    protected function stringifyVal($val)
+    protected function stringifyVal($val): string
     {
         if ($this->isValidIdent($val)) {
             return (string) $val;
@@ -123,7 +123,7 @@ class LogfmtFormatter extends NormalizerFormatter
         return $this->convertToString($val);
     }
 
-    protected function isValidIdent($val)
+    protected function isValidIdent($val): bool
     {
         if (is_string($val)) {
             // Control chars, DEL, ", =, space
@@ -131,36 +131,22 @@ class LogfmtFormatter extends NormalizerFormatter
                 return false;
             }
 
-            if (0 === strlen($val)) {
-                return false;
-            }
-
-            return true;
+            return $val !== '';
         }
 
         if (is_bool($val)) {
             return false;
         }
 
-        if (is_scalar($val)) {
-            return true;
-        }
-
-        return false;
+        return is_scalar($val);
     }
 
-    protected function convertToString($data)
+    protected function convertToString($data): string
     {
         if (null === $data || is_bool($data)) {
             return var_export($data, true);
         }
 
-        if (is_scalar($data)) {
-            $string = (string) $data;
-        }
-
-        $string = $this->toJson($data, true);
-
-        return $string;
+        return $this->toJson($data, true);
     }
 }
