@@ -43,14 +43,14 @@ class LogfmtFormatter extends NormalizerFormatter
      * @param string|null $levelKey Key to use for the log level.
      * @param string|null $channelKey Key to use for the log channel name.
      * @param string|null $messageKey Key to use for the log message.
-     * @param string $dateFormat The format of the timestamp: should be a format supported by DateTime::format
+     * @param string|null $dateFormat The format of the timestamp: should be a format supported by DateTime::format
      */
     public function __construct(
         ?string $dateTimeKey = 'ts',
         ?string $levelKey = 'lvl',
         ?string $channelKey = 'chan',
         ?string $messageKey = 'msg',
-        string $dateFormat = DateTime::RFC3339
+        ?string $dateFormat = DateTime::RFC3339
     ) {
         $this->timeKey = $dateTimeKey ? trim($dateTimeKey) : null;
         $this->lvlKey = $levelKey ? trim($levelKey) : null;
