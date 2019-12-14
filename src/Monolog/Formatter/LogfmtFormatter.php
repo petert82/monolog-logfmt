@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Petert82\Monolog\Formatter;
 
+use DateTime;
 use Monolog\Formatter\NormalizerFormatter;
 use function is_bool;
 use function is_scalar;
@@ -49,7 +50,7 @@ class LogfmtFormatter extends NormalizerFormatter
         ?string $levelKey = 'lvl',
         ?string $channelKey = 'chan',
         ?string $messageKey = 'msg',
-        string $dateFormat = \DateTime::RFC3339
+        string $dateFormat = DateTime::RFC3339
     ) {
         $this->timeKey = $dateTimeKey ? trim($dateTimeKey) : null;
         $this->lvlKey = $levelKey ? trim($levelKey) : null;
