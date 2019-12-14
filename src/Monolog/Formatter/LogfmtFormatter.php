@@ -37,6 +37,12 @@ class LogfmtFormatter extends NormalizerFormatter
      * Note that these standard log fields will take precedence over fields with the same name(s)
      * in the context or extra arrays when formatting log records. i.e. with the default names, a
      * context field with the name "msg" would not be included in the output from `format`.
+     *
+     * @param string|null $dateTimeKey Key to use for the log timestamp.
+     * @param string|null $levelKey Key to use for the log level.
+     * @param string|null $channelKey Key to use for the log channel name.
+     * @param string|null $messageKey Key to use for the log message.
+     * @param string $dateFormat The format of the timestamp: should be a format supported by DateTime::format
      */
     public function __construct(
         ?string $dateTimeKey = 'ts',
