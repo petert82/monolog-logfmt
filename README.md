@@ -12,7 +12,7 @@ $ composer require petert82/monolog-logfmt
 
 ## Requirements
 
-- PHP 5.4.0 or later.
+- PHP 7.4.0 or later.
 
 ## Usage
 
