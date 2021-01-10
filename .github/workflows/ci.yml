@@ -20,10 +20,10 @@ jobs:
         with:
           php-version: ${{ matrix.php-versions }}
           extensions: mbstring, intl, zip
-          coverage: none
+          coverage: pcov
 
       - name: Install dependencies
         run: composer install --no-progress --prefer-dist
 
       - name: Run test suite
-        run: vendor/bin/phpunit
+        run: vendor/bin/phpunit --coverage-text
