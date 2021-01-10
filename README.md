@@ -76,6 +76,11 @@ The formatter's output would now look like this:
 msg=Message
 ```
 
+## Development
+
+A `Makefile` is provided to test the library locally, the only requirement for this is that Docker be installed your
+development machine. Simply run `make` in the project root to execute the test suite.
+
 ## License
 
 Licensed under the MIT License - see the `LICENSE` file for details
