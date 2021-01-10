@@ -80,7 +80,7 @@ msg=Message
 
 ## Development
 
-A `Makefile` is provided to test the library locally, the only requirement for this is that Docker be installed your
+A `Makefile` is provided to test the library locally, the only requirement for this is that Docker be installed on your
 development machine. Simply run `make` in the project root to execute the test suite.
 
 ## License
