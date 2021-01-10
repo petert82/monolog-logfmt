@@ -22,12 +22,6 @@ jobs:
           extensions: mbstring, intl, zip
           coverage: none
 
-      - name: Check PHP Version
-        run: php -v
-
-      - name: Check Composer Version
-        run: composer -V
-
       - name: Install dependencies
         run: composer update -n
 
