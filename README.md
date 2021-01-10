@@ -1,5 +1,7 @@
 # monolog-logfmt
 
+![CI](https://github.com/petert82/monolog-logfmt/workflows/ci/badge.svg?event=push)
+
 A [logfmt](https://brandur.org/logfmt) formatter for [Monolog](https://github.com/Seldaek/monolog).
 
 ## Installation
