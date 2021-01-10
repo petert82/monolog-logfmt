@@ -1,4 +1,4 @@
-.PHONY: all build composer-install test-php
+.PHONY: all build composer-install composer-update test-php
 
 all: build test-php
 
@@ -14,6 +14,15 @@ composer-install:
 	--rm \
 	monolog-logfmt-php7 \
 	sh -c "composer install"
+
+composer-update:
+	@echo "Running composer update (PHP 7)"
+	@docker run \
+	--name=monolog-logfmt-php7 \
+	--mount type=bind,source="$$(pwd)",target=/usr/src/monolog-logfmt \
+	--rm \
+	monolog-logfmt-php7 \
+	sh -c "composer update"
 
 test-php:
 	@echo "Running tests (PHP 7)"
