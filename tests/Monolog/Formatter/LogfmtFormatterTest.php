@@ -4,6 +4,9 @@ declare(strict_types=1);
 use PHPUnit\Framework\TestCase;
 use Petert82\Monolog\Formatter\LogfmtFormatter;
 
+/**
+ * @covers \Petert82\Monolog\Formatter\LogfmtFormatter
+ */
 class LogfmtFormatterTest extends TestCase
 {
     public function testItDoesntQuotePlainMessages(): void
