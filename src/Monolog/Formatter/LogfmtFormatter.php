@@ -134,7 +134,7 @@ class LogfmtFormatter extends NormalizerFormatter
     {
         if (is_string($val)) {
             // Control chars, DEL, ", =, space
-            if (preg_match('/[\x00-\x1F\x7F\"\=\s]/u', $val)) {
+            if (preg_match('/[\x00-\x1F\x7F\"\=\s]/', $val)) {
                 return false;
             }
 
