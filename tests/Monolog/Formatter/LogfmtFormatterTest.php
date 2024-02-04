@@ -119,6 +119,7 @@ Hi
         ];
         $record['extra'] = [
             "this=wrong" => 1,
+            "no	tabs	pls" => 2,
             '%^asdf' => true,
             "
 what?" => false,
