@@ -1,3 +1,6 @@
+## 2.1.1 (2024-02-04)
+- Fix non-UTF8 strings are always considered not needing quoting.
+
 ## 2.1.0 (2021-01-10)
 - Allow installation on PHP 8
 
