@@ -23,7 +23,7 @@ class LogfmtFormatter extends NormalizerFormatter
     protected ?string $lvlKey;
     protected ?string $chanKey;
     protected ?string $msgKey;
-    protected ?string $lineSuffix = "\n";
+    protected ?string $formattedRecordTerminator = "\n";
 
     protected bool $timeKeyValid = true;
     protected bool $lvlKeyValid = true;
@@ -45,7 +45,7 @@ class LogfmtFormatter extends NormalizerFormatter
      * @param string|null $channelKey Key to use for the log channel name.
      * @param string|null $messageKey Key to use for the log message.
      * @param string|null $dateFormat The format of the timestamp: should be a format supported by DateTime::format
-     * @param string|null $lineSuffix The suffix to append at the end of the formatted line, defaults to a newline. (useful to set to null for syslog)
+     * @param string|null $formattedRecordTerminator The suffix to append at the end of the formatted line, defaults to a newline. (useful to set to null for syslog)
      */
     public function __construct(
         ?string $dateTimeKey = 'ts',
@@ -53,7 +53,7 @@ class LogfmtFormatter extends NormalizerFormatter
         ?string $channelKey = 'chan',
         ?string $messageKey = 'msg',
         ?string $dateFormat = DateTime::RFC3339,
-        ?string $lineSuffix = "\n"
+        ?string $formattedRecordTerminator = "\n"
     ) {
         $this->timeKey = $dateTimeKey ? trim($dateTimeKey) : null;
         $this->lvlKey = $levelKey ? trim($levelKey) : null;
@@ -63,7 +63,7 @@ class LogfmtFormatter extends NormalizerFormatter
         $this->lvlKeyValid = $this->isValidIdent($this->lvlKey);
         $this->chanKeyValid = $this->isValidIdent($this->chanKey);
         $this->msgKeyValid = $this->isValidIdent($this->msgKey);
-        $this->lineSuffix   = $lineSuffix;
+        $this->formattedRecordTerminator = $formattedRecordTerminator;
 
         parent::__construct($dateFormat);
     }
@@ -109,7 +109,7 @@ class LogfmtFormatter extends NormalizerFormatter
             $pairs[$extraKey] = $extraKey.'='.$this->stringifyVal($extraVal);
         }
 
-        return implode(' ', $pairs) . $this->lineSuffix;
+        return implode(' ', $pairs) . $this->formattedRecordTerminator;
     }
 
     /**
