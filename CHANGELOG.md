@@ -1,3 +1,6 @@
+## 2.2.0 (2024-02-04)
+- Allow customising the character used to terminate the formatted record.
+
 ## 2.1.1 (2024-02-04)
 - Fix non-UTF8 strings are always considered not needing quoting.
 
