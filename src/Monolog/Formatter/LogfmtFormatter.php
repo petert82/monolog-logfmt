@@ -25,6 +25,7 @@ class LogfmtFormatter extends NormalizerFormatter
     protected ?string $lvlKey;
     protected ?string $chanKey;
     protected ?string $msgKey;
+    protected ?string $formattedRecordTerminator = "\n";
 
     protected bool $timeKeyValid = true;
     protected bool $lvlKeyValid = true;
@@ -46,13 +47,15 @@ class LogfmtFormatter extends NormalizerFormatter
      * @param null|string $channelKey Key to use for the log channel name.
      * @param null|string $messageKey Key to use for the log message.
      * @param null|string $dateFormat The format of the timestamp: should be a format supported by DateTime::format
+     * @param null|string $formattedRecordTerminator The suffix to append after the formatted record. Defaults to a newline. (useful to set to null for syslog)
      */
     public function __construct(
         ?string $dateTimeKey = 'ts',
         ?string $levelKey = 'lvl',
         ?string $channelKey = 'chan',
         ?string $messageKey = 'msg',
-        ?string $dateFormat = DateTime::RFC3339
+        ?string $dateFormat = DateTime::RFC3339,
+        ?string $formattedRecordTerminator = "\n"
     ) {
         $this->timeKey = $dateTimeKey ? trim($dateTimeKey) : null;
         $this->lvlKey = $levelKey ? trim($levelKey) : null;
@@ -62,6 +65,7 @@ class LogfmtFormatter extends NormalizerFormatter
         $this->lvlKeyValid = $this->isValidIdent($this->lvlKey);
         $this->chanKeyValid = $this->isValidIdent($this->chanKey);
         $this->msgKeyValid = $this->isValidIdent($this->msgKey);
+        $this->formattedRecordTerminator = $formattedRecordTerminator;
 
         parent::__construct($dateFormat);
     }
@@ -104,7 +108,7 @@ class LogfmtFormatter extends NormalizerFormatter
             $pairs[$extraKey] = $extraKey.'='.$this->stringifyVal($extraVal);
         }
 
-        return implode(' ', $pairs)."\n";
+        return implode(' ', $pairs) . $this->formattedRecordTerminator;
     }
 
     public function formatBatch(array $records)

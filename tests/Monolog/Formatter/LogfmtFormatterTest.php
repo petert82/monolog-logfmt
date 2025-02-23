@@ -250,6 +250,14 @@ EOS;
         $this->assertEquals($expected, $formatter->formatBatch($batch));
     }
 
+    public function testOverrideLineSuffix(): void
+    {
+        $formatter = new LogfmtFormatter('ts', 'lvl', 'chan', 'msg', DateTime::RFC3339, null);
+        $record = $this->getRecord('Message');
+        $expected = 'ts=2017-11-19T19:00:00+00:00 lvl=INFO chan=app msg=Message';
+        $this->assertEquals($expected, $formatter->format($record));
+    }
+
     protected function getRecord($message = 'A log message'): array
     {
         return [
