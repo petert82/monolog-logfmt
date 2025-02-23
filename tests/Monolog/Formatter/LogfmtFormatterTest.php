@@ -1,11 +1,14 @@
 <?php
+
 declare(strict_types=1);
 
-use PHPUnit\Framework\TestCase;
 use Petert82\Monolog\Formatter\LogfmtFormatter;
+use PHPUnit\Framework\TestCase;
 
 /**
  * @covers \Petert82\Monolog\Formatter\LogfmtFormatter
+ *
+ * @internal
  */
 class LogfmtFormatterTest extends TestCase
 {
@@ -40,9 +43,9 @@ class LogfmtFormatterTest extends TestCase
         $expected = 'ts=2017-11-19T19:00:00+00:00 lvl=INFO chan=app msg=""'."\n";
         $this->assertEquals($expected, $formatter->format($record));
 
-        $record = $this->getRecord("
+        $record = $this->getRecord('
 Hi
-");
+');
         $expected = 'ts=2017-11-19T19:00:00+00:00 lvl=INFO chan=app msg="\nHi\n"'."\n";
         $this->assertEquals($expected, $formatter->format($record));
     }
@@ -114,15 +117,15 @@ Hi
         $formatter = new LogfmtFormatter();
         $record = $this->getRecord('Message');
         $record['context'] = [
-            "you ain't seen me" => "right",
+            "you ain't seen me" => 'right',
             'cool%story' => 'bro',
         ];
         $record['extra'] = [
-            "this=wrong" => 1,
-            "no	tabs	pls" => 2,
+            'this=wrong' => 1,
+            'no	tabs	pls' => 2,
             '%^asdf' => true,
-            "
-what?" => false,
+            '
+what?' => false,
             '' => 'ignore this',
         ];
         $expected = 'ts=2017-11-19T19:00:00+00:00 lvl=INFO chan=app msg=Message cool%story=bro %^asdf=true'."\n";
