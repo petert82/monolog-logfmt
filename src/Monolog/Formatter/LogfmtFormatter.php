@@ -108,7 +108,7 @@ class LogfmtFormatter extends NormalizerFormatter
             $pairs[$extraKey] = $extraKey.'='.$this->stringifyVal($extraVal);
         }
 
-        return implode(' ', $pairs) . $this->formattedRecordTerminator;
+        return implode(' ', $pairs).$this->formattedRecordTerminator;
     }
 
     public function formatBatch(array $records)
