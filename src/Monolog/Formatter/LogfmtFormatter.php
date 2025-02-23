@@ -1,10 +1,12 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Petert82\Monolog\Formatter;
 
 use DateTime;
 use Monolog\Formatter\NormalizerFormatter;
+
 use function is_bool;
 use function is_scalar;
 use function var_export;
@@ -39,11 +41,11 @@ class LogfmtFormatter extends NormalizerFormatter
      * in the context or extra arrays when formatting log records. i.e. with the default names, a
      * context field with the name "msg" would not be included in the output from `format`.
      *
-     * @param string|null $dateTimeKey Key to use for the log timestamp.
-     * @param string|null $levelKey Key to use for the log level.
-     * @param string|null $channelKey Key to use for the log channel name.
-     * @param string|null $messageKey Key to use for the log message.
-     * @param string|null $dateFormat The format of the timestamp: should be a format supported by DateTime::format
+     * @param null|string $dateTimeKey Key to use for the log timestamp.
+     * @param null|string $levelKey Key to use for the log level.
+     * @param null|string $channelKey Key to use for the log channel name.
+     * @param null|string $messageKey Key to use for the log message.
+     * @param null|string $dateFormat The format of the timestamp: should be a format supported by DateTime::format
      */
     public function __construct(
         ?string $dateTimeKey = 'ts',
@@ -64,9 +66,6 @@ class LogfmtFormatter extends NormalizerFormatter
         parent::__construct($dateFormat);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function format(array $record)
     {
         $vars = parent::format($record);
@@ -108,9 +107,6 @@ class LogfmtFormatter extends NormalizerFormatter
         return implode(' ', $pairs)."\n";
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function formatBatch(array $records)
     {
         $message = '';

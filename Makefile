@@ -66,3 +66,12 @@ test-php:
 	--rm \
 	monolog-logfmt-php8 \
 	sh -c "composer install && vendor/bin/phpunit"
+
+php-cs-fixer:
+	@echo "Fixing code style"
+		@docker run \
+		--name=monolog-logfmt-php8 \
+		--mount type=bind,source="$$(pwd)",target=/usr/src/monolog-logfmt \
+		--rm \
+		monolog-logfmt-php8 \
+		sh -c "PHP_CS_FIXER_IGNORE_ENV=1 vendor/bin/php-cs-fixer fix --using-cache=no"
