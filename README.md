@@ -78,6 +78,26 @@ The formatter's output would now look like this:
 msg=Message
 ```
 
+### Structure Flattening
+
+By default, nested arrays and objects in log context and extra fields are serialized as JSON strings. However, you can enable structure flattening to convert these complex structures into logfmt-compatible key-value pairs:
+
+```php
+// Default JSON serialization
+$formatter = new LogfmtFormatter();
+// Produces: user={"name":"John","roles":["admin","editor"]}
+
+// With flattening enabled
+$formatter = new LogfmtFormatter(
+    'ts', 'lvl', 'chan', 'msg', 
+    DateTime::RFC3339, "\n", 
+    true // Enable flattening
+);
+// Produces: user_name=John user_roles_0=admin user_roles_1=editor
+```
+
+This is useful for maintaining only one serialization format in your log entries, rather than two.  Additionally avoids nested properties.
+
 ## Development
 
 A `Makefile` is provided to test the library locally, the only requirement for this is that Docker be installed on your
