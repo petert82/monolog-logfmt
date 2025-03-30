@@ -80,23 +80,21 @@ msg=Message
 
 ### Structure Flattening
 
-By default, nested arrays and objects in log context and extra fields are serialized as JSON strings. However, you can enable structure flattening to convert these complex structures into logfmt-compatible key-value pairs:
+By default, nested arrays and objects in the log context and extra fields are serialized as JSON strings. If you would prefer to instead flatten such structures into logfmt-compatible key-value pairs, set the `$flattenStructures` constructor parameter true:
 
 ```php
 // Default JSON serialization
 $formatter = new LogfmtFormatter();
-// Produces: user={"name":"John","roles":["admin","editor"]}
+// Produces output like: user={"name":"John","roles":["admin","editor"]}
 
 // With flattening enabled
 $formatter = new LogfmtFormatter(
-    'ts', 'lvl', 'chan', 'msg', 
-    DateTime::RFC3339, "\n", 
+    'ts', 'lvl', 'chan', 'msg',
+    DateTime::RFC3339, "\n",
     true // Enable flattening
 );
-// Produces: user_name=John user_roles_0=admin user_roles_1=editor
+// Outfut now looks like: user_name=John user_roles_0=admin user_roles_1=editor
 ```
-
-This is useful for maintaining only one serialization format in your log entries, rather than two.  Additionally avoids nested properties.
 
 ## Development
 
