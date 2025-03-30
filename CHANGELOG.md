@@ -1,4 +1,7 @@
-## 2.2.0 (2024-02-04)
+## 2.3.0 (2025-03-30)
+- Allow flattening nested arrays/objects.
+
+## 2.2.0 (2025-02-23)
 - Allow customising the character used to terminate the formatted record.
 
 ## 2.1.1 (2024-02-04)
