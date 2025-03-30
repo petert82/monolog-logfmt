@@ -187,6 +187,188 @@ what?' => false,
         $this->assertEquals($expected, $formatter->format($record));
     }
 
+    public function testItFlattensArraysInContext(): void
+    {
+        $formatter = new LogfmtFormatter(
+            'ts',
+            'lvl',
+            'chan',
+            'msg',
+            DateTime::RFC3339,
+            "\n",
+            true // Enable flattening
+        );
+
+        $record = $this->getRecord('Message');
+        $record['context'] = [
+            'items' => ['apple', 'banana', 'cherry'],
+        ];
+        $expected = 'ts=2017-11-19T19:00:00+00:00 lvl=INFO chan=app msg=Message items_0=apple items_1=banana items_2=cherry'."\n";
+        $this->assertEquals($expected, $formatter->format($record));
+    }
+
+    public function testItFlattensAssociativeArraysInContext(): void
+    {
+        $formatter = new LogfmtFormatter(
+            'ts',
+            'lvl',
+            'chan',
+            'msg',
+            DateTime::RFC3339,
+            "\n",
+            true // Enable flattening
+        );
+
+        $record = $this->getRecord('Message');
+        $record['context'] = [
+            'user' => [
+                'id' => 123,
+                'name' => 'John Doe',
+                'roles' => ['admin', 'editor'],
+            ],
+        ];
+        $expected = 'ts=2017-11-19T19:00:00+00:00 lvl=INFO chan=app msg=Message user_id=123 user_name="John Doe" user_roles_0=admin user_roles_1=editor'."\n";
+        $this->assertEquals($expected, $formatter->format($record));
+    }
+
+    public function testItFlattensNestedArraysInContext(): void
+    {
+        $formatter = new LogfmtFormatter(
+            'ts',
+            'lvl',
+            'chan',
+            'msg',
+            DateTime::RFC3339,
+            "\n",
+            true // Enable flattening
+        );
+
+        $record = $this->getRecord('Message');
+        $record['context'] = [
+            'data' => [
+                'items' => [
+                    ['id' => 1, 'name' => 'Item 1'],
+                    ['id' => 2, 'name' => 'Item 2'],
+                ],
+            ],
+        ];
+        $expected = 'ts=2017-11-19T19:00:00+00:00 lvl=INFO chan=app msg=Message data_items_0_id=1 data_items_0_name="Item 1" data_items_1_id=2 data_items_1_name="Item 2"'."\n";
+        $this->assertEquals($expected, $formatter->format($record));
+    }
+
+    public function testItFlattensObjectsInContext(): void
+    {
+        $formatter = new LogfmtFormatter(
+            'ts',
+            'lvl',
+            'chan',
+            'msg',
+            DateTime::RFC3339,
+            "\n",
+            true // Enable flattening
+        );
+
+        $record = $this->getRecord('Message');
+
+        $user = new stdClass();
+        $user->id = 123;
+        $user->name = 'John Doe';
+
+        $record['context'] = [
+            'user' => $user,
+        ];
+        $expected = 'ts=2017-11-19T19:00:00+00:00 lvl=INFO chan=app msg=Message user_id=123 user_name="John Doe"'."\n";
+        $this->assertEquals($expected, $formatter->format($record));
+    }
+
+    public function testItFlattensExceptionsInContext(): void
+    {
+        $formatter = new LogfmtFormatter(
+            'ts',
+            'lvl',
+            'chan',
+            'msg',
+            DateTime::RFC3339,
+            "\n",
+            true // Enable flattening
+        );
+
+        $record = $this->getRecord('Message');
+
+        $previous = new Exception('Previous exception', 100);
+        $exception = new Exception('Main exception', 200, $previous);
+
+        $record['context'] = [
+            'exception' => $exception,
+        ];
+
+        // Use assertStringContainsString for the parts we can reliably predict
+        $formatted = $formatter->format($record);
+        $this->assertStringContainsString('ts=2017-11-19T19:00:00+00:00 lvl=INFO chan=app msg=Message', $formatted);
+        $this->assertStringContainsString('exception_message="Main exception"', $formatted);
+        $this->assertStringContainsString('exception_code=200', $formatted);
+        $this->assertStringContainsString('exception_previous_message="Previous exception"', $formatted);
+        $this->assertStringContainsString('exception_previous_code=100', $formatted);
+    }
+
+    public function testCompareJsonAndFlattenedOutput(): void
+    {
+        $jsonFormatter = new LogfmtFormatter(); // Default: JSON format
+        $flattenFormatter = new LogfmtFormatter(
+            'ts',
+            'lvl',
+            'chan',
+            'msg',
+            DateTime::RFC3339,
+            "\n",
+            true // Enable flattening
+        );
+
+        $record = $this->getRecord('Message');
+        $record['context'] = [
+            'exception' => [
+                'class' => 'RuntimeException',
+                'message' => 'Something went wrong',
+                'code' => 500,
+            ],
+        ];
+
+        $jsonOutput = $jsonFormatter->format($record);
+        $flattenOutput = $flattenFormatter->format($record);
+
+        $this->assertStringContainsString('exception={"class":"RuntimeException","message":"Something went wrong","code":500}', $jsonOutput);
+        $this->assertStringContainsString('exception_class=RuntimeException exception_message="Something went wrong" exception_code=500', $flattenOutput);
+    }
+
+    public function testItHandlesCyclicalReferences(): void
+    {
+        $formatter = new LogfmtFormatter(
+            'ts',
+            'lvl',
+            'chan',
+            'msg',
+            DateTime::RFC3339,
+            "\n",
+            true // Enable flattening
+        );
+
+        $record = $this->getRecord('Message');
+
+        // Create objects with cyclical references
+        $obj1 = new stdClass();
+        $obj2 = new stdClass();
+        $obj1->ref = $obj2;
+        $obj2->back = $obj1;
+
+        $record['context'] = [
+            'cyclic' => $obj1,
+        ];
+
+        $formatted = $formatter->format($record);
+        $this->assertStringContainsString('ts=2017-11-19T19:00:00+00:00 lvl=INFO chan=app msg=Message', $formatted);
+        $this->assertStringContainsString('cyclic_ref_back=NULL', $formatted);
+    }
+
     public function testKeysCanBeCustomised(): void
     {
         $formatter = new LogfmtFormatter('date', 'level', 'channel', 'message');

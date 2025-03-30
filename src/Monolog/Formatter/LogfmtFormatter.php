@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace Petert82\Monolog\Formatter;
 
 use DateTime;
+use DateTimeInterface;
+use JsonSerializable;
 use Monolog\Formatter\NormalizerFormatter;
+use Throwable;
 
 use function is_bool;
 use function is_scalar;
@@ -26,6 +29,7 @@ class LogfmtFormatter extends NormalizerFormatter
     protected ?string $chanKey;
     protected ?string $msgKey;
     protected ?string $formattedRecordTerminator = "\n";
+    protected bool $flattenStructures = false;
 
     protected bool $timeKeyValid = true;
     protected bool $lvlKeyValid = true;
@@ -48,6 +52,7 @@ class LogfmtFormatter extends NormalizerFormatter
      * @param null|string $messageKey Key to use for the log message.
      * @param null|string $dateFormat The format of the timestamp: should be a format supported by DateTime::format
      * @param null|string $formattedRecordTerminator The suffix to append after the formatted record. Defaults to a newline. (useful to set to null for syslog)
+     * @param null|bool $flattenStructures Whether to flatten nested arrays and objects into logfmt-compatible key-value pairs
      */
     public function __construct(
         ?string $dateTimeKey = 'ts',
@@ -55,7 +60,8 @@ class LogfmtFormatter extends NormalizerFormatter
         ?string $channelKey = 'chan',
         ?string $messageKey = 'msg',
         ?string $dateFormat = DateTime::RFC3339,
-        ?string $formattedRecordTerminator = "\n"
+        ?string $formattedRecordTerminator = "\n",
+        ?bool $flattenStructures = false
     ) {
         $this->timeKey = $dateTimeKey ? trim($dateTimeKey) : null;
         $this->lvlKey = $levelKey ? trim($levelKey) : null;
@@ -66,6 +72,7 @@ class LogfmtFormatter extends NormalizerFormatter
         $this->chanKeyValid = $this->isValidIdent($this->chanKey);
         $this->msgKeyValid = $this->isValidIdent($this->msgKey);
         $this->formattedRecordTerminator = $formattedRecordTerminator;
+        $this->flattenStructures = (bool) $flattenStructures;
 
         parent::__construct($dateFormat);
     }
@@ -95,7 +102,8 @@ class LogfmtFormatter extends NormalizerFormatter
             if (! $this->isValidIdent($ctxKey)) {
                 continue;
             }
-            $pairs[$ctxKey] = $ctxKey.'='.$this->stringifyVal($ctxVal);
+
+            $this->addValue($pairs, $ctxKey, $ctxVal);
         }
 
         foreach ($vars['extra'] as $extraKey => $extraVal) {
@@ -105,7 +113,8 @@ class LogfmtFormatter extends NormalizerFormatter
             if (! $this->isValidIdent($extraKey)) {
                 continue;
             }
-            $pairs[$extraKey] = $extraKey.'='.$this->stringifyVal($extraVal);
+
+            $this->addValue($pairs, $extraKey, $extraVal);
         }
 
         return implode(' ', $pairs).$this->formattedRecordTerminator;
@@ -155,5 +164,73 @@ class LogfmtFormatter extends NormalizerFormatter
         }
 
         return $this->toJson($data, true);
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * Overridden to handle objects without including class names in flattened keys
+     */
+    protected function normalize($data, int $depth = 0)
+    {
+        // Handle regular objects specially - extract their properties without class name
+        if (is_object($data)) {
+            if (($data instanceof DateTimeInterface) || ($data instanceof Throwable) || ($data instanceof JsonSerializable) || method_exists($data, '__toString')) {
+                return parent::normalize($data, $depth);
+            }
+
+            // Get the object's properties without the class name wrapper
+            return json_decode($this->toJson($data, true), true);
+        }
+
+        return parent::normalize($data, $depth);
+    }
+
+    /**
+     * Recursively flatten complex values (arrays and objects) into key-value pairs.
+     *
+     * @param mixed $value
+     */
+    protected function addValue(array &$pairs, string $keyPrefix, $value): void
+    {
+        if (!$this->flattenStructures) {
+            $pairs[$keyPrefix] = $keyPrefix.'='.$this->stringifyVal($value);
+
+            return;
+        }
+
+        // For arrays, iterate and add each entry with a prefixed key
+        if (is_array($value)) {
+            foreach ($value as $k => $v) {
+                $newKey = $keyPrefix.'_'.$k;
+                $this->addValue($pairs, $newKey, $v);
+            }
+
+            return;
+        }
+
+        // For objects, use the normalizer which handles special cases like DateTime
+        if (is_object($value)) {
+            try {
+                $normalized = $this->normalize($value);
+
+                if (is_array($normalized)) {
+                    foreach ($normalized as $k => $v) {
+                        $newKey = $keyPrefix.'_'.$k;
+                        $this->addValue($pairs, $newKey, $v);
+                    }
+                } else {
+                    // If normalization returned a scalar
+                    $pairs[$keyPrefix] = $keyPrefix.'='.$this->stringifyVal($normalized);
+                }
+            } catch (Throwable $e) {
+                // If normalization fails, use a placeholder
+                $pairs[$keyPrefix] = $keyPrefix.'="[object conversion error]"';
+            }
+
+            return;
+        }
+
+        $pairs[$keyPrefix] = $keyPrefix.'='.$this->stringifyVal($value);
     }
 }
