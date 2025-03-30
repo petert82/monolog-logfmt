@@ -19,8 +19,6 @@ use function var_export;
  *
  * @see https://brandur.org/logfmt
  * @see https://godoc.org/github.com/kr/logfmt
- *
- * @author Peter Thompson <peter.thompson@dunelm.org.uk>
  */
 class LogfmtFormatter extends NormalizerFormatter
 {
